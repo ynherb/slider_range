@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>THEYALOW</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+<style>
+
+
+.section1 {
+  background: #f4c507;
+  box-shadow: inset 0px 0.1875em 0.3125em -0.125em rgba(0,0,0,0.84);
+  padding-bottom: 3.375em;
+}
+.section1_block {
+  text-transform: uppercase;
+  font-size: 17px;
+  color: #ffffff;
+  font-family: 'PT Sans';
+  letter-spacing: 0.01em;
+  padding-top: 1.135em;
+  width: 84%;
+  margin: 0 auto;
+}
+
+.range_slide {
+  margin-top: 1.081em;
+  display: flex;
+  overflow: hidden;
+}
+
+.karusel {
+  display: flex;
+  position: relative;
+  left: 0;
+  right: 0;
+  height: 8.62em;
+  flex-shrink: 0;
+}
+.karusel>div {
+    background: url('1.png') no-repeat;
+    background-size: cover;
+    box-sizing: border-box;
+    width: 12.18em;
+    height: 8.62em;
+    flex-shrink: 0;
+    margin: 0  0 0 20px;
+    position: relative;
+}
+
+.range {
+  width: 87.5%;
+  height: 10px;
+  background: black;
+  opacity: 0.58;
+  margin: 1.513em auto 0 auto;
+  position: relative;
+  border-radius: 5px;
+}
+
+.range__slider {
+  width: 22%;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #ffff;
+  position: absolute;
+}
+
+@media screen and (min-width: 1281px) {
+.section1_block {font-size: 1.687em;}
+}
+</style>
+</head>
+<body>
+  <div class="section1">
+    <div class="section1_block wrap">
+      <h1>Lorem ipsum dolor sit amet</h1>
+        <div class="range_slide" data-id="widthSlide">
+          <div class="karusel" data-id="slider">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      
+        <div class="range" data-id="widthRange">
+          <div class="range__slider" data-id="range"></div>
+        </div>
+    </div>
+  </div>
+
+</body>
+<script>
+var range = function (range, widthRange, callback, delay) {
+  var bind;
+  var elem = {
+    range: document.querySelector('[data-id='+range+']'),
+    widthRange: document.querySelector('[data-id='+widthRange+']')  
+  };
+  
+  var now = new Date();
+  var delay = delay || 10;
+
+  return {
+    cursor: {},
+    elem_style: {},
+    event: (function () {
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+          return {
+          move: 'touchmove',
+          down: 'touchstart',
+          up: 'touchend'
+        }
+      }
+        return {
+          move: 'mousemove',
+          down: 'mousedown',
+          up: 'mouseup'
+        }
+      
+    })(),
+
+    setup: function () {
+      console.log()
+      elem.range.addEventListener(this.event.down, this.clickDown.bind(this), false)
+      window.addEventListener('resize', this.responsive.bind(this),false)
+    },
+
+    responsive: function () {
+      elem[range].style.left = this.elem_style.rangeLeft / this.elem_style.widthRange  * 100 +'%'
+      callback(this.elem_style.rangeLeft / this.elem_style.maxWidth * 100 )
+    },
+
+    clickDown: function (event) {
+      event.preventDefault()
+      bind_move = this.moveMouse.bind(this) ;
+      bin_up = this.clickUp.bind(this);
+      /* 
+      Зберігаємо ссилку на функцію щоб видалити
+      this.moveMOuse.bind(this) != this.moveMouse.bind(this)
+      */
+      if(event.target.getAttribute('data-id') == 'range') { 
+        this.positionCalc(event)
+        document.body.addEventListener(this.event.up, bin_up, false)
+        document.addEventListener(this.event.move, bind_move, false)
+      }
+    },
+
+    positionCalc: function (event) {
+      if(event) this.cursor.cursorStart = event.pageX;
+      this.elem_style.rangeLeft = elem[range].offsetLeft;
+      this.elem_style.widthRange = elem[widthRange].offsetWidth;
+      this.elem_style.maxWidth = elem[widthRange].offsetWidth - elem[range].offsetWidth
+    },
+
+    clickUp: function (e) {
+      this.positionCalc()
+      document.body.removeEventListener(this.event.up, bin_up, false)
+      document.removeEventListener(this.event.move, bind_move, false)
+    },
+    
+    moveMouse: function (event) {  
+      if((new Date() - now) > delay) {
+        now = new Date();
+        this.movement(event)
+      }
+    },
+
+    movement: function (event) {
+      var pos = this.calculation(event.pageX)
+        pos = (pos > this.elem_style.maxWidth) ? this.elem_style.maxWidth : (pos < 0) ? 0 : pos;    
+        // в callback передаємо позицію повзунка в % співвідношенні
+        callback(pos / this.elem_style.maxWidth * 100) 
+        elem[range].style.left =  pos + 'px'     
+    },
+
+    calculation: function (x) {
+      return (x - this.cursor.cursorStart + this.elem_style.rangeLeft);
+    }
+  }
+
+}
+  
+var slider = range('range', 'widthRange', function (pos) {
+  //функція получає позицію в %
+  var slide =  document.querySelector('[data-id="slider"]')
+  var slideWidth = document.querySelector('[data-id="widthSlide"]')
+  slide.style.left = -(slide.offsetWidth - slideWidth.offsetWidth) * (pos / 100) + 'px'
+})
+
+slider.setup()
+</script>
+</html>
